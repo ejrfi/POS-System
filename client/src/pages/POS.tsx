@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, ScanBarcode, Trash2, CreditCard, Banknote, User, Minus, Plus, Loader2, Receipt } from "lucide-react";
+import { Search, ScanBarcode, Trash2, CreditCard, Banknote, User, Minus, Plus, Loader2, Receipt, ShoppingCart } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
