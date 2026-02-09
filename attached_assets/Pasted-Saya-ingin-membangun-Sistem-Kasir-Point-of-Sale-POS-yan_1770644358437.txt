@@ -1,0 +1,233 @@
+Saya ingin membangun Sistem Kasir (Point of Sale / POS) yang profesional dan siap digunakan untuk usaha retail, menggunakan teknologi web modern dengan spesifikasi berikut:
+
+🔧 TEKNOLOGI YANG DIGUNAKAN
+
+Frontend: Vue.js 3 (Composition API)
+
+Backend: Node.js dengan Express.js
+
+Database: MySQL
+
+Authentication: JWT (JSON Web Token)
+
+Role-based Access Control
+
+Arsitektur: REST API
+
+Target Platform:
+
+Web POS
+
+Bisa dikembangkan menjadi Desktop POS menggunakan Electron
+
+👥 ROLE & HAK AKSES
+1. Admin
+
+Kelola produk (tambah, edit, hapus)
+
+Kelola harga barang
+
+Kelola stok
+
+Kelola merek / brand
+
+Melihat semua laporan penjualan
+
+Melihat laporan barang terjual per periode
+
+Kelola member pelanggan
+
+Melihat & validasi input barang
+
+2. Kasir
+
+Melakukan transaksi penjualan
+
+Scan barcode barang
+
+Input diskon (jika diizinkan sistem)
+
+Memproses return barang
+
+Tidak boleh:
+
+Mengubah harga barang
+
+Mengakses menu admin
+
+Mengakses laporan global
+
+Semua pembatasan WAJIB divalidasi di backend, bukan hanya di frontend.
+
+📦 FITUR PRODUK & BARANG
+
+Setiap produk memiliki:
+
+Barcode (unik)
+
+Nama produk
+
+Merek / brand
+
+Harga
+
+Stok
+
+Saat admin input barang:
+
+Sistem mengecek barcode duplikat
+
+Sistem mengecek nama produk yang mirip
+
+Barcode scanner dianggap sebagai keyboard input.
+
+🧾 TRANSAKSI PENJUALAN
+
+Scan barcode untuk menambahkan barang ke keranjang
+
+Keranjang transaksi menampilkan:
+
+Nama barang
+
+Harga
+
+Qty
+
+Subtotal
+
+Diskon
+
+Diskon per barang:
+
+Bisa berupa persen (%) atau nominal (Rp)
+
+Diskon per transaksi:
+
+Berlaku setelah semua barang masuk
+
+Diskon disimpan di detail transaksi, bukan di tabel produk
+
+🎁 SISTEM POIN MEMBER
+
+Sistem member pelanggan
+
+Contoh aturan poin:
+
+Setiap pembelian Rp100.000 = 1 poin
+
+Poin hanya diberikan jika pelanggan adalah member
+
+Perhitungan poin dilakukan di backend
+
+Poin disimpan dalam tabel log poin (riwayat)
+
+👤 MEMBER PELANGGAN
+
+Data member:
+
+Nama
+
+Nomor HP
+
+Total poin
+
+Setiap transaksi member:
+
+Tercatat di riwayat transaksi
+
+Menambah poin sesuai aturan
+
+🔄 RETURN BARANG
+
+Return barang berdasarkan transaksi
+
+Tidak menghapus data transaksi lama
+
+Sistem membuat record return terpisah
+
+Saat return:
+
+Stok barang bertambah kembali
+
+Total penjualan dikoreksi
+
+📊 LAPORAN
+1. Laporan Penjualan Harian
+
+Total transaksi
+
+Total item terjual
+
+Total omzet
+
+2. Laporan Barang Terjual
+
+Bisa difilter berdasarkan:
+
+Merek (contoh: “Cedea”)
+
+Rentang tanggal (contoh: 1 bulan)
+
+Contoh kebutuhan:
+
+“Berapa barang merek Cedea yang terjual bulan ini?”
+
+🛡️ KEAMANAN & KONSISTENSI DATA
+
+Semua transaksi menggunakan MySQL TRANSACTION
+
+BEGIN
+
+COMMIT
+
+ROLLBACK jika gagal
+
+Validasi role dilakukan di middleware Express
+
+Harga tidak boleh diubah oleh kasir (backend enforcement)
+
+🗂️ STRUKTUR DATABASE (WAJIB ADA)
+
+users
+
+roles
+
+products
+
+brands
+
+customers (member)
+
+sales
+
+sale_items
+
+returns
+
+point_logs
+
+Gunakan relasi yang jelas (foreign key) dan indexing pada kolom penting seperti:
+
+barcode
+
+created_at
+
+📁 OUTPUT YANG DIHARAPKAN
+
+Struktur folder backend Express.js
+
+Struktur frontend Vue.js
+
+Contoh API endpoint utama:
+
+Login
+
+Transaksi penjualan
+
+Return barang
+
+Laporan penjualan
+
+Contoh flow checkout yang aman menggunakan database transaction
+
+Kode bersih, modular, dan siap dikembangkan
