@@ -1,0 +1,4 @@
+ALTER TABLE cashier_shifts
+  ADD COLUMN user_name VARCHAR(255) NOT NULL DEFAULT '',
+  ADD COLUMN user_role VARCHAR(50) NOT NULL DEFAULT 'cashier',
+  ADD COLUMN terminal_name VARCHAR(255) NULL;

@@ -2,8 +2,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { ensureAppSettingsTable, ensureAuditLogsTable, ensureCashierShiftSnapshotColumns, ensureCashierShiftsTable, ensureCustomerMembershipSchema, ensureDiscountsSchema, ensureEnterpriseInventorySchema, ensureMultiUnitColumns, ensureProductPriceAuditsTable, ensureReturnRefundMethodColumn, ensureReturnsEnhancementsSchema, ensureSalesShiftIdColumn, ensureSalesStatusColumns, ensureShiftReportsSchema, ensureSuspendedSalesTable } from "./db";
 
 const app = express();
+console.log("Starting server...");
 const httpServer = createServer(app);
 
 declare module "http" {
@@ -14,13 +16,14 @@ declare module "http" {
 
 app.use(
   express.json({
+    limit: "50mb",
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },
   }),
 );
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -60,9 +63,29 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log("Registering routes...");
+  await ensureMultiUnitColumns();
+  await ensureProductPriceAuditsTable();
+  await ensureSuspendedSalesTable();
+  await ensureCashierShiftsTable();
+  await ensureCashierShiftSnapshotColumns();
+  await ensureSalesShiftIdColumn();
+  await ensureSalesStatusColumns();
+  await ensureReturnRefundMethodColumn();
+  await ensureReturnsEnhancementsSchema();
+  await ensureShiftReportsSchema();
+  await ensureAuditLogsTable();
+  await ensureAppSettingsTable();
+  await ensureDiscountsSchema();
+  await ensureEnterpriseInventorySchema();
+  await ensureCustomerMembershipSchema();
   await registerRoutes(httpServer, app);
+  console.log("Routes registered.");
 
+  // Global error handler
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+    // ...
+
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
@@ -89,15 +112,11 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
-})();
+  const port = parseInt(process.env.PORT || "5001", 10);
+  httpServer.listen(port, "0.0.0.0", () => {
+    log(`serving on port ${port}`);
+  });
+})().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
+});

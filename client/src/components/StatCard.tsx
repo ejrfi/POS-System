@@ -7,18 +7,21 @@ interface StatCardProps {
   icon: LucideIcon;
   trend?: string;
   trendUp?: boolean;
+  description?: string;
+  iconClassName?: string;
   className?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, trend, trendUp, className }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon, trend, trendUp, description, iconClassName, className }: StatCardProps) {
   return (
     <div className={cn("p-6 bg-card rounded-xl border shadow-sm hover:shadow-md transition-shadow", className)}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <h3 className="text-2xl font-bold mt-2">{value}</h3>
+          {description ? <p className="text-xs text-muted-foreground mt-1">{description}</p> : null}
         </div>
-        <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+        <div className={cn("h-12 w-12 rounded-full flex items-center justify-center", iconClassName ?? "bg-primary/10 text-primary")}>
           <Icon className="w-6 h-6" />
         </div>
       </div>

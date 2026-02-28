@@ -13,12 +13,12 @@ export default function NotFound() {
               <AlertCircle className="w-8 h-8" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">404 Page Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">404 Halaman tidak ditemukan</h1>
           <p className="text-gray-600 mb-6">
-            The page you are looking for doesn't exist or has been moved.
+            Halaman yang Anda cari tidak ada atau sudah dipindahkan.
           </p>
           <Link href="/pos">
-            <Button className="w-full">Return to POS</Button>
+            <Button className="w-full">Kembali ke POS</Button>
           </Link>
         </CardContent>
       </Card>

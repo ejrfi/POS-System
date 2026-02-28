@@ -1,0 +1,7 @@
+ALTER TABLE cashier_shifts
+  ADD COLUMN cash_refunds DECIMAL(12,2) NOT NULL DEFAULT 0,
+  ADD COLUMN non_cash_refunds DECIMAL(12,2) NOT NULL DEFAULT 0,
+  ADD COLUMN points_reversed INT NOT NULL DEFAULT 0,
+  ADD COLUMN points_restored INT NOT NULL DEFAULT 0,
+  ADD COLUMN point_tx_count INT NOT NULL DEFAULT 0,
+  ADD COLUMN big_discount_tx_count INT NOT NULL DEFAULT 0;
