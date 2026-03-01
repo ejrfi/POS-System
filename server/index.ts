@@ -65,7 +65,12 @@ app.use((req, res, next) => {
 (async () => {
   console.log("PORT FROM ENV:", process.env.PORT);
 
-  // Health check endpoint (Placed at the very top to ensure availability)
+  const PORT = process.env.PORT;
+  if (!PORT) {
+    throw new Error("PORT environment variable not found. Railway MUST inject this.");
+  }
+
+  // 1. Health check endpoint (Placed at the very top to ensure availability)
   app.get("/health", (_, res) => {
     res.status(200).send("OK");
   });
@@ -75,61 +80,63 @@ app.use((req, res, next) => {
     res.send("SERVER RUNNING");
   });
 
-  console.log("Registering routes...");
-  await ensureMultiUnitColumns();
-  await ensureProductPriceAuditsTable();
-  await ensureSuspendedSalesTable();
-  await ensureCashierShiftsTable();
-  await ensureCashierShiftSnapshotColumns();
-  await ensureSalesShiftIdColumn();
-  await ensureSalesStatusColumns();
-  await ensureReturnRefundMethodColumn();
-  await ensureReturnsEnhancementsSchema();
-  await ensureShiftReportsSchema();
-  await ensureAuditLogsTable();
-  await ensureAppSettingsTable();
-  await ensureDiscountsSchema();
-  await ensureEnterpriseInventorySchema();
-  await ensureCustomerMembershipSchema();
-  await registerRoutes(httpServer, app);
-  console.log("Routes registered.");
-
-  // Global error handler
-  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    // ...
-
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    console.error("Internal Server Error:", err);
-
-    if (res.headersSent) {
-      return next(err);
-    }
-
-    return res.status(status).json({ message });
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
-  }
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled.
-  const PORT = process.env.PORT;
-  if (!PORT) {
-    throw new Error("PORT environment variable not found. Railway MUST inject this.");
-  }
-
+  // 2. Start listening IMMEDIATELY
   httpServer.listen(Number(PORT), "0.0.0.0", () => {
     log(`Server running on port ${PORT}`);
   });
+
+  // 3. Run Database Setup & Route Registration in Background
+  (async () => {
+    try {
+      console.log("Starting background initialization...");
+      console.log("Registering routes...");
+      await ensureMultiUnitColumns();
+      await ensureProductPriceAuditsTable();
+      await ensureSuspendedSalesTable();
+      await ensureCashierShiftsTable();
+      await ensureCashierShiftSnapshotColumns();
+      await ensureSalesShiftIdColumn();
+      await ensureSalesStatusColumns();
+      await ensureReturnRefundMethodColumn();
+      await ensureReturnsEnhancementsSchema();
+      await ensureShiftReportsSchema();
+      await ensureAuditLogsTable();
+      await ensureAppSettingsTable();
+      await ensureDiscountsSchema();
+      await ensureEnterpriseInventorySchema();
+      await ensureCustomerMembershipSchema();
+      await registerRoutes(httpServer, app);
+      console.log("Routes registered.");
+
+      // Global error handler
+      app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+        const status = err.status || err.statusCode || 500;
+        const message = err.message || "Internal Server Error";
+
+        console.error("Internal Server Error:", err);
+
+        if (res.headersSent) {
+          return next(err);
+        }
+
+        return res.status(status).json({ message });
+      });
+
+      // importantly only setup vite in development and after
+      // setting up all the other routes so the catch-all route
+      // doesn't interfere with the other routes
+      if (process.env.NODE_ENV === "production") {
+        serveStatic(app);
+      } else {
+        const { setupVite } = await import("./vite");
+        await setupVite(httpServer, app);
+      }
+      console.log("Background initialization complete.");
+    } catch (err) {
+      console.error("Startup background error:", err);
+    }
+  })();
+
 })().catch((err) => {
   console.error("Failed to start server:", err);
   process.exit(1);
