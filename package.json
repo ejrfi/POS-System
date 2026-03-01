@@ -8,7 +8,7 @@
     "node": "24.x"
   },
   "license": "MIT",
-  "main": "dist/main.cjs",
+  "main": "dist/index.cjs",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "electron": "electron .",
@@ -22,6 +22,20 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "cleanup:db": "tsx script/cleanup-db.ts"
+  },
+  "build": {
+    "appId": "com.possystem.app",
+    "productName": "POS System",
+    "directories": {
+      "output": "dist/electron"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
@@ -92,7 +106,6 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.2.5",
-    "utf-8-validate": "^6.0.6",
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
@@ -137,6 +150,7 @@
   },
   "optionalDependencies": {
     "@esbuild/win32-x64": "^0.27.3",
-    "bufferutil": "^4.1.0"
+    "bufferutil": "^4.1.0",
+    "utf-8-validate": "*"
   }
 }
