@@ -123,12 +123,14 @@ app.use((req, res, next) => {
       // doesn't interfere with the other routes
       if (process.env.NODE_ENV === "production") {
         // Serve static files from the React app build directory
-        app.use(express.static(path.resolve(__dirname, "../client/dist")));
+        // Fix: Use 'dist/public' because vite.config.ts builds to 'dist/public'
+        // NOT 'client/dist'
+        app.use(express.static(path.resolve(__dirname, "../dist/public")));
 
         // The "catchall" handler: for any request that doesn't
         // match one above, send back React's index.html file.
         app.get("/{*path}", (_, res) => {
-          res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
+          res.sendFile(path.resolve(__dirname, "../dist/public/index.html"));
         });
       } else {
         const { setupVite } = await import("./vite");
