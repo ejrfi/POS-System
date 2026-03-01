@@ -3,6 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { InitializationService } from "./services/initializationService";
 import { ensureAppSettingsTable, ensureAuditLogsTable, ensureCashierShiftSnapshotColumns, ensureCashierShiftsTable, ensureCustomerMembershipSchema, ensureDiscountsSchema, ensureEnterpriseInventorySchema, ensureMultiUnitColumns, ensureProductPriceAuditsTable, ensureReturnRefundMethodColumn, ensureReturnsEnhancementsSchema, ensureSalesShiftIdColumn, ensureSalesStatusColumns, ensureShiftReportsSchema, ensureSuspendedSalesTable } from "./db";
 
 const app = express();
@@ -82,30 +83,49 @@ app.use((req, res, next) => {
   });
 
   // 3. Run Database Setup & Route Registration in Background
-  (async () => {
-    try {
-      console.log("Starting background initialization...");
-      console.log("Registering routes...");
-      await ensureMultiUnitColumns();
-      await ensureProductPriceAuditsTable();
-      await ensureSuspendedSalesTable();
-      await ensureCashierShiftsTable();
-      await ensureCashierShiftSnapshotColumns();
-      await ensureSalesShiftIdColumn();
-      await ensureSalesStatusColumns();
-      await ensureReturnRefundMethodColumn();
-      await ensureReturnsEnhancementsSchema();
-      await ensureShiftReportsSchema();
-      await ensureAuditLogsTable();
-      await ensureAppSettingsTable();
-      await ensureDiscountsSchema();
-      await ensureEnterpriseInventorySchema();
-      await ensureCustomerMembershipSchema();
-      await registerRoutes(httpServer, app);
-      console.log("Routes registered.");
+   (async () => {
+     try {
+       console.log("Starting background initialization...");
+       console.log("Registering routes...");
+       
+       // Schema & Table Setup
+       await ensureMultiUnitColumns();
+       await ensureProductPriceAuditsTable();
+    await ensureSuspendedSalesTable();
+    await ensureCashierShiftsTable();
+    await ensureCashierShiftSnapshotColumns();
+    await ensureSalesShiftIdColumn();
+    await ensureSalesStatusColumns();
+    await ensureReturnRefundMethodColumn();
+    await ensureReturnsEnhancementsSchema();
+    await ensureShiftReportsSchema();
+    await ensureAuditLogsTable();
+    await ensureAppSettingsTable();
+    await ensureDiscountsSchema();
+    await ensureEnterpriseInventorySchema();
+    await ensureCustomerMembershipSchema();
 
-      // Global error handler
-      app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+    // Register API Routes
+    await registerRoutes(httpServer, app);
+    console.log("Routes registered.");
+
+    // === CRITICAL: Ensure Default Admin in Production ===
+    // This runs on EVERY startup, but internally it checks if users exist.
+    // If no users, it creates admin/admin123
+    try {
+      const initResult = await InitializationService.ensureDefaultAdmin();
+      if (initResult.created) {
+        console.log("✅ INITIALIZATION SUCCESS: Default admin created (admin / admin123)");
+      } else {
+        console.log("ℹ️ Initialization skipped: Users already exist.");
+      }
+    } catch (initErr) {
+      console.error("❌ Failed to ensure default admin:", initErr);
+    }
+    // ===================================================
+
+    // Global error handler
+    app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
         const status = err.status || err.statusCode || 500;
         const message = err.message || "Internal Server Error";
 

@@ -35,6 +35,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE_URL || "";
+  const fullUrl = url.startsWith("/") ? `${API_BASE}${url}` : url;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -44,15 +46,13 @@ export async function apiRequest(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, {
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
   });
 
   if (res.status === 401) {
-    // Optional: clear token if invalid?
-    // localStorage.removeItem("auth_token");
   }
 
   await throwIfResNotOk(res);
@@ -65,13 +65,16 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const API_BASE: string = (import.meta as any)?.env?.VITE_API_BASE_URL || "";
     const headers: Record<string, string> = {};
     const token = localStorage.getItem("auth_token");
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const res = await fetch(queryKey.join("/") as string, {
+    const q = queryKey.join("/") as string;
+    const fullUrl = q.startsWith("/") ? `${API_BASE}${q}` : q;
+    const res = await fetch(fullUrl, {
       headers,
     });
 
