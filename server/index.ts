@@ -63,6 +63,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Health check endpoint (Placed at the very top to ensure availability)
+  app.get("/health", (_, res) => {
+    res.status(200).send("OK");
+  });
+
+  // Debug root endpoint
+  app.get("/", (_, res) => {
+    res.send("SERVER RUNNING");
+  });
+
   console.log("Registering routes...");
   await ensureMultiUnitColumns();
   await ensureProductPriceAuditsTable();
@@ -98,11 +108,6 @@ app.use((req, res, next) => {
     return res.status(status).json({ message });
   });
 
-  // Health check endpoint (MUST be before static serving)
-  app.get("/health", (_, res) => {
-    res.status(200).send("OK");
-  });
-
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
@@ -118,7 +123,7 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const PORT = process.env.PORT || 5000;
-  httpServer.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(Number(PORT), "0.0.0.0", () => {
     log(`Server running on port ${PORT}`);
   });
 })().catch((err) => {
