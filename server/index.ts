@@ -1,3 +1,4 @@
+import path from "path";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
@@ -75,11 +76,6 @@ app.use((req, res, next) => {
     res.status(200).send("OK");
   });
 
-  // Debug root endpoint
-  app.get("/", (_, res) => {
-    res.send("SERVER RUNNING");
-  });
-
   // 2. Start listening IMMEDIATELY
   httpServer.listen(Number(PORT), "0.0.0.0", () => {
     log(`Server running on port ${PORT}`);
@@ -126,7 +122,14 @@ app.use((req, res, next) => {
       // setting up all the other routes so the catch-all route
       // doesn't interfere with the other routes
       if (process.env.NODE_ENV === "production") {
-        serveStatic(app);
+        // Serve static files from the React app build directory
+        app.use(express.static(path.resolve(__dirname, "../client/dist")));
+
+        // The "catchall" handler: for any request that doesn't
+        // match one above, send back React's index.html file.
+        app.get("*", (_, res) => {
+          res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
+        });
       } else {
         const { setupVite } = await import("./vite");
         await setupVite(httpServer, app);
