@@ -137,6 +137,6 @@
   },
   "optionalDependencies": {
     "@esbuild/win32-x64": "^0.27.3",
-    "bufferutil": "^4.0.8"
+    "bufferutil": "4.1.0"
   }
 }
