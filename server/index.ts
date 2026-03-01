@@ -63,6 +63,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log("PORT FROM ENV:", process.env.PORT);
+
   // Health check endpoint (Placed at the very top to ensure availability)
   app.get("/health", (_, res) => {
     res.status(200).send("OK");
@@ -119,10 +121,12 @@ app.use((req, res, next) => {
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const PORT = process.env.PORT || 5000;
+  // Other ports are firewalled.
+  const PORT = process.env.PORT;
+  if (!PORT) {
+    throw new Error("PORT environment variable not found. Railway MUST inject this.");
+  }
+
   httpServer.listen(Number(PORT), "0.0.0.0", () => {
     log(`Server running on port ${PORT}`);
   });
