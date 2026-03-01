@@ -127,7 +127,7 @@ app.use((req, res, next) => {
 
         // The "catchall" handler: for any request that doesn't
         // match one above, send back React's index.html file.
-        app.get("*", (_, res) => {
+        app.get("/{*path}", (_, res) => {
           res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
         });
       } else {
